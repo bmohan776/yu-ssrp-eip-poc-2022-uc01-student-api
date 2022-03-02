@@ -1,0 +1,11 @@
+# DO NOT include azure-functions-worker in this file
+# The Python Worker is managed by Azure Functions platform
+# Manually managing azure-functions-worker may cause unexpected issues
+# Design and implement a "composite" RESTful API backend using Azure Functions that calls other APIs for data 
+# Code PoC use case #1
+
+azure-functions
+datetime
+requests
+xmltodict
+ConfigParser
