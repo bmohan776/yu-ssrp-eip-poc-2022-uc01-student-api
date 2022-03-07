@@ -11,6 +11,7 @@ import configparser
 current_time = dt.datetime.now()
 config = configparser.ConfigParser()
 config.readfp(open(r'config.ini'))
+
 studentRegistration_url = config.get('studentRecordsAPI', 'studentRegistration')
 studentCourses_url = config.get('studentRecordsAPI', 'studentCourses')
 StudAPIKEY = config.get('APIKEY', 'studentAPIKEY')
@@ -23,6 +24,7 @@ def api_call(sisid,academicyear,url):
        headers = {'Accept': 'application/json', 'X-API-Key': StudAPIKEY}
  
        # GET request
+       logging.info("Invoke Student API")
        response = requests.request("GET", reg_url, headers=headers)
        response.raise_for_status()
        json_data = json.loads(response.text)
@@ -34,30 +36,9 @@ def api_call(sisid,academicyear,url):
     
 def studentRegistration(sisid, academicyear):
     try:
-       """
-       reg_url = studentRegistration_url+""+sisid+""+"/academicyear/"+""+academicyear
-       #print(f" Student URL : {reg_url} ")
-       headers = {'Accept': 'application/json', 'X-API-Key': StudAPIKEY}
- 
-       # GET request
-       response = requests.request("GET", reg_url, headers=headers)
-       response.raise_for_status()
-       json_data = json.loads(response.text)
-       
-      
-       registrationstatus = []
-       yuarprogtype = []
-       for item in json_data:
-        registrationstatus.append(item['registrationstatus'])
-        yuarprogtype.append(item['yuarprogtype'])
-        print(registrationstatus)
-        print(yuarprogtype)
-        """
+       logging.info("Invoke Student Registration API")
        json_data = api_call(sisid, academicyear,studentRegistration_url)
-       #print([db_item["registrationstatus"] for db_item in json_data])
        i_registrationstatus = [db_item["registrationstatus"] for db_item in json_data]
-       
-       #print([db_item["yuarprogtype"] for db_item in json_data])
        i_yuarprogtype = [db_item["yuarprogtype"] for db_item in json_data]
 
        #print(i_registrationstatus[0])
@@ -75,21 +56,13 @@ def studentRegistration(sisid, academicyear):
 
 def studentcourses(sisid, academicyear):
     try:
-       """
-       reg_url = studentCourses_url+""+sisid+""+"/academicyear/"+""+academicyear
-       print(f" Student URL : {reg_url} ")
-       headers = {'Accept': 'application/json', 'X-API-Key': StudAPIKEY}
- 
-       # GET request
-       response = requests.request("GET", reg_url, headers=headers)
-       response.raise_for_status()
-       json_data = json.loads(response.text)
-       """
+       logging.info("Invoke Student Courses API")
+        
        json_data = api_call(sisid, academicyear,studentCourses_url)
        
        print([db_item["creditweight"] for db_item in json_data])
        i_creditweight = ([db_item["creditweight"] for db_item in json_data])
-       print(sum(i_creditweight))
+       print("credit", sum(i_creditweight))
        
        if sum(i_creditweight) == 18 or sum(i_creditweight) > 18:
            json_data = json.dumps({"sisid": f"{sisid}",  "eligibility": "Eligible - Undergraduate Housing", "datetime": f"{current_time}"})
@@ -118,7 +91,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
        sisidresponse = studentcourses(sisid,academicyear)
 
     if sisidresponse:
-        return func.HttpResponse(f"Student ID : {sisidresponse}")
+        return func.HttpResponse(f"{sisidresponse}")
     else:
         return func.HttpResponse(f" Student ID : {sisid} student is not eligible for housing.",
              status_code = 200
